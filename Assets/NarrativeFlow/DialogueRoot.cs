@@ -7,19 +7,19 @@ namespace NarrativeFlow
     [CreateAssetMenu(fileName = "DialogueRoot", menuName = "Narrative Flow/Dialogue Root")]
     public class DialogueRoot : ScriptableObject
     {
-        private DialogueLoader dialogueLoader;
+        private DialogueLoader _dialogueLoader;
 
         public void Initialize()
         {
             string path = AssetDatabase.GetAssetPath(this);
             string directory = Path.GetDirectoryName(path);
 
-            dialogueLoader = new DialogueLoader(directory);
+            _dialogueLoader = new DialogueLoader(directory);
         }
 
         public DialogContent GetDialogue(string dialogueName)
         {
-            if (dialogueLoader.dialogues.TryGetValue(dialogueName, out DialogContent dialogue))
+            if (_dialogueLoader.Dialogues.TryGetValue(dialogueName, out DialogContent dialogue))
             {
                 return dialogue;
             }

@@ -5,11 +5,11 @@ namespace NarrativeFlow
 {
     public class DialogueLoader
     {
-        public Dictionary<string, DialogContent> dialogues;
+        public Dictionary<string, DialogContent> Dialogues { get;}
 
         public DialogueLoader(string directoryPath)
         {
-            dialogues = new Dictionary<string, DialogContent>();
+            Dialogues = new Dictionary<string, DialogContent>();
             LoadAllDialogues(directoryPath);
         }
 
@@ -19,7 +19,7 @@ namespace NarrativeFlow
             {
                 string content = File.ReadAllText(file);
                 DialogContent loadedDialogue = ParseTextFile(content);
-                dialogues.Add(Path.GetFileName(file), loadedDialogue);
+                Dialogues.Add(Path.GetFileNameWithoutExtension(file), loadedDialogue);
             }
         }
 
@@ -27,15 +27,23 @@ namespace NarrativeFlow
         {
             DialogContent textFileContent = new DialogContent();
             textFileContent.Commands = new List<string>();
+            textFileContent.Dialogue = "";
 
             using (StringReader reader = new StringReader(content))
             {
                 string line;
+                bool readingDialogue = false;
+
                 while ((line = reader.ReadLine()) != null)
                 {
                     if (line.StartsWith("# Текст диалога"))
                     {
-                        textFileContent.Dialogue = reader.ReadLine();
+                        readingDialogue = true;
+                        continue;
+                    }
+                    else if (readingDialogue)
+                    {
+                        textFileContent.Dialogue += line + "\n";
                     }
                     else if (line.StartsWith("#"))
                     {

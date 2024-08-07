@@ -4,57 +4,27 @@ namespace NarrativeFlow
 {
     public class DialogueService : MonoBehaviour
     {
-        public DialogueRoot DialogueRoot;
-       
+        [SerializeField] private DialogueRoot _dialogueRoot;
+        [SerializeField] private TextDisplayer _textDisplayer;
+
         private DialogContent _currentDialogue;
+        public DialogContent CurrentDialogue => _currentDialogue;
 
         void Start()
         {
-            if (DialogueRoot != null)
+            if (_dialogueRoot != null)
             {
-                DialogueRoot.Initialize();
-                StartDialogue("NewTextFile.narr");
+                _dialogueRoot.Initialize();
+                StartDialogue("NewTextFile");
             }
         }
 
         public void StartDialogue(string dialogueName)
         {
-            _currentDialogue = DialogueRoot.GetDialogue(dialogueName);
+            _currentDialogue = _dialogueRoot.GetDialogue(dialogueName);
             if (_currentDialogue != null)
             {
-                DisplayDialogue();
-                ExecuteCommands();
-            }
-        }
-
-        private void DisplayDialogue()
-        {
-            Debug.Log(_currentDialogue.Dialogue);
-        }
-
-        private void ExecuteCommands()
-        {
-            foreach (var command in _currentDialogue.Commands)
-            {
-                var commandParts = command.Split(' ');
-                var commandType = commandParts[0];
-                var commandValue = commandParts.Length > 1 ? commandParts[1] : null;
-
-                switch (commandType)
-                {
-                    case "change_background":
-                        Debug.Log("Changing background to " + commandValue);
-                        break;
-                    case "play_music":
-                        Debug.Log("Playing music: " + commandValue);
-                        break;
-                    case "next_event":
-                        StartDialogue(commandValue);
-                        break;
-                    default:
-                        Debug.LogWarning("Unknown command: " + command);
-                        break;
-                }
+                _textDisplayer.DisplayText(_currentDialogue);
             }
         }
     }

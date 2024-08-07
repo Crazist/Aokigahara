@@ -4,7 +4,11 @@ namespace NarrativeFlow
 {
     public class DialogContent
     {
-        public string Dialogue;
-        public List<string> Commands;
+        public List<string> Commands { get; set; }
+        public string Dialogue { get; set; }
+        public float DisplaySpeed { get; set; }
+
+        public DialogContent() => 
+            Commands = new List<string>();
     }
 }
