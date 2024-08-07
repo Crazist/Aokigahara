@@ -30,12 +30,6 @@ namespace NarrativeFlow
                 case "next_event":
                     StartCoroutine(ExecuteNextEventWithDelay(commandValue));
                     break;
-                case "set_speaker":
-                    _speakerText.text = commandValue;
-                    break;
-                case "clear_speaker":
-                    _speakerText.text = "";
-                    break;
                 default:
                     Debug.LogWarning("Unknown command: " + command);
                     break;
@@ -46,15 +40,6 @@ namespace NarrativeFlow
         {
             yield return new WaitForSeconds(_transitionDelay);
             _dialogueService.StartDialogue(nextEvent);
-        }
-
-        public void ExecuteCommands(List<string> commands)
-        {
-            foreach (var command in commands)
-            {
-                ExecuteCommand(command);
-            }
-            commands.Clear();
         }
     }
 }

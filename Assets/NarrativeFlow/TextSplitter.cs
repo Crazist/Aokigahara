@@ -51,7 +51,10 @@ namespace NarrativeFlow
                     currentIndex += length;
                 }
 
-                pages.Add(pageText.TrimEnd());
+                if (!string.IsNullOrWhiteSpace(pageText.TrimEnd()))
+                {
+                    pages.Add(pageText.TrimEnd());
+                }
             }
 
             return pages;

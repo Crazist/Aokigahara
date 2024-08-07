@@ -18,6 +18,7 @@ namespace NarrativeFlow
         private Queue<string> _pages;
         private TextSplitter _textSplitter;
         private bool _isWaitingForInput;
+        private bool _shouldClearSpeaker;
 
         private void Awake()
         {
@@ -31,6 +32,7 @@ namespace NarrativeFlow
             StopAllCoroutines();
             _dialogueText.text = "";
             _speakerText.text = "";
+            _shouldClearSpeaker = false;
             _pages = new Queue<string>(_textSplitter.SplitTextIntoPages(dialogContent.Dialogue, _maxCharactersPerPage));
             DisplayNextPage(dialogContent.DisplaySpeed);
         }
@@ -41,6 +43,11 @@ namespace NarrativeFlow
             {
                 _isWaitingForInput = false;
                 _continueButton.gameObject.SetActive(false);
+                if (_shouldClearSpeaker)
+                {
+                    _speakerText.text = "";
+                    _shouldClearSpeaker = false;
+                }
                 DisplayNextPage(0.05f);
             }
         }
@@ -50,7 +57,14 @@ namespace NarrativeFlow
             if (_pages.Count > 0)
             {
                 string page = _pages.Dequeue();
-                StartCoroutine(TypeText(page, speed));
+                if (page.StartsWith("#"))
+                {
+                    ExecuteCommand(page);
+                }
+                else
+                {
+                    StartCoroutine(TypeText(page, speed));
+                }
             }
             else
             {
@@ -64,14 +78,24 @@ namespace NarrativeFlow
             _dialogueText.text = "";
             _isWaitingForInput = false;
 
+            bool isInDialogue = false;
+
             for (int i = 0; i < text.Length; i++)
             {
-                if (text[i] == '#' && (i == 0 || text[i - 1] == '\n'))
+                if (text[i] == '"' && !isInDialogue)
                 {
-                    string command = ExtractCommand(ref i, text);
-                    _commandExecutor.ExecuteCommand(command);
-                    _isWaitingForInput = true;
-                    OnContinueButtonClicked();
+                    isInDialogue = true;
+                    _dialogueText.text += "\n";
+                }
+                else if (text[i] == '"' && isInDialogue)
+                {
+                    isInDialogue = false;
+                }
+                else if (!isInDialogue && text[i] == ':')
+                {
+                    string speakerName = _dialogueText.text.Trim();
+                    _speakerText.text = speakerName;
+                    _dialogueText.text = "";
                 }
                 else
                 {
@@ -84,6 +108,7 @@ namespace NarrativeFlow
             {
                 _isWaitingForInput = true;
                 _continueButton.gameObject.SetActive(true);
+                _shouldClearSpeaker = true;
             }
             else
             {
@@ -92,17 +117,10 @@ namespace NarrativeFlow
             }
         }
 
-        private string ExtractCommand(ref int index, string text)
+        private void ExecuteCommand(string command)
         {
-            int endIndex = text.IndexOf('\n', index);
-            if (endIndex == -1)
-            {
-                endIndex = text.Length;
-            }
-
-            string command = text.Substring(index, endIndex - index).Trim();
-            index = endIndex;
-            return command;
+            _commandExecutor.ExecuteCommand(command);
+            DisplayNextPage(0.05f);
         }
 
         private IEnumerator ExecuteCommandsWithDelay()
@@ -111,7 +129,7 @@ namespace NarrativeFlow
             ExecuteCommands();
         }
 
-        public void ExecuteCommands()
+        private void ExecuteCommands()
         {
             if (_dialogueService == null)
                 return;
